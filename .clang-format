@@ -1,0 +1,4 @@
+BasedOnStyle: LLVM
+IndentWidth: 4 # This is still relevant for alignment or if UseTab isn't set to Always
+TabWidth: 4
+UseTab: ForIndentation
