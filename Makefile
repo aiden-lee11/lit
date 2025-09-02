@@ -17,7 +17,7 @@ all: $(BIN)
 
 # Link objects into final binary
 $(BIN): $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $@ $^
+	$(CXX) $(CXXFLAGS) -o $@ $^ -lz
 
 # Compile source files into object files
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BUILD_DIR)
