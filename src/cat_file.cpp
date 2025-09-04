@@ -1,3 +1,51 @@
 #include "cat_file.h"
+#include <filesystem>
+#include <fstream>
+#include <ios>
+#include <iostream>
+#include <string>
+#include <zlib.h>
 
-void cat_file(const std::string filename) { return; }
+void cat_file(const std::string object_id) {
+	// todo add better handling for the object id length and stuff
+	// for now hardcoding to objects i think this is fine?
+	std::filesystem::path filename =
+	    ".lit/objects/" + object_id.substr(0, 2) + "/" + object_id.substr(2);
+
+	uLong compressed_size = std::filesystem::file_size(filename);
+
+	std::ifstream inputFile(filename);
+	if (!inputFile.is_open()) {
+		std::cerr << "error couldnt open file " << filename << std::endl;
+		return;
+	}
+
+	// Read the entire file content into a std::string
+	// This constructs a string from the beginning of the file to the end
+	std::string compressed_content((std::istreambuf_iterator<char>(inputFile)),
+	                               std::istreambuf_iterator<char>());
+
+	const char *dataPtr = compressed_content.c_str();
+
+	Bytef *compressed_ptr =
+	    reinterpret_cast<Bytef *>(const_cast<char *>(dataPtr));
+
+	// maybe change ratio of alloc at some point
+	int compress_ratio = 5;
+
+	uLong uncompresed_size = compressed_size * compress_ratio;
+	Bytef *uncompressed_data = new Bytef[uncompresed_size];
+
+	int result = uncompress(uncompressed_data, &uncompresed_size,
+	                        compressed_ptr, compressed_size);
+
+	std::string uncompressed_string =
+	    reinterpret_cast<const char *>(uncompressed_data);
+	if (result == Z_OK) {
+		std::cout << uncompressed_string << std::endl;
+	} else {
+		std::cerr << "error uncompressing file" << std::endl;
+	}
+
+	delete[] uncompressed_data;
+}
