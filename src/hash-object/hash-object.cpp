@@ -1,4 +1,4 @@
-#include "hash_object.h"
+#include "hash-object.h"
 #include "TinySHA1.hpp"
 #include <cstdio>
 #include <filesystem>
@@ -91,7 +91,6 @@ void hash_object(const std::string filename) {
 	std::filesystem::create_directory(subDir);
 
 	std::ofstream objFile(path);
-	std::cout << store << std::endl;
 	std::string compressed_file_content = deflate_string(store);
 	objFile.write(compressed_file_content.data(),
 	              compressed_file_content.size());

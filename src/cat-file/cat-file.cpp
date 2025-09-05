@@ -1,4 +1,4 @@
-#include "cat_file.h"
+#include "cat-file.h"
 #include <filesystem>
 #include <fstream>
 #include <ios>
@@ -46,7 +46,7 @@ void cat_file(const std::string object_id) {
 
 		int end_of_header = uncompressed_string.find('\0');
 		uncompressed_string = uncompressed_string.substr(end_of_header);
-		std::cout << uncompressed_string << std::endl;
+		std::cout << uncompressed_string;
 	} else {
 		std::cerr << "error uncompressing file" << std::endl;
 	}
