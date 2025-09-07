@@ -49,29 +49,10 @@ std::string deflate_string(const std::string &input_string,
 	return std::string(compressed_data.data(), actual_compressed_size);
 }
 
-void hash_object(const std::string filename) {
-	std::ifstream inputFile(filename, std::ios::binary | std::ios::ate);
-	if (!inputFile.is_open()) {
-		std::cerr << "error couldnt open file " << filename << std::endl;
-		return;
-	}
-
-	std::streamsize size = inputFile.tellg();
-	inputFile.seekg(0, std::ios::beg);
-
-	std::string content(size, '\0');
-	if (!inputFile.read(content.data(), size)) {
-		std::cerr << "error reading file " << filename << std::endl;
-		return;
-	}
-
-	std::string header = "blob " + std::to_string(content.size());
-	header.push_back('\0');
-	std::string store = header + content;
-
+std::string write_object_to_store(const std::string object_data) {
 	// add in here the header once we determine if blob or tree etc
 	sha1::SHA1 s;
-	s.processBytes(store.data(), store.size());
+	s.processBytes(object_data.data(), object_data.size());
 
 	uint8_t hash_bytes[20];
 	s.getDigestBytes(hash_bytes);
@@ -83,16 +64,44 @@ void hash_object(const std::string filename) {
 	}
 	std::string hexStr = oss.str();
 
-	std::cout << hexStr << std::endl;
-
 	std::string subDir = ".lit/objects/" + hexStr.substr(0, 2) + "/";
 	std::string path = subDir + hexStr.substr(2);
 
 	std::filesystem::create_directory(subDir);
 
 	std::ofstream objFile(path);
-	std::string compressed_file_content = deflate_string(store);
+	std::string compressed_file_content = deflate_string(object_data);
 	objFile.write(compressed_file_content.data(),
 	              compressed_file_content.size());
 	objFile.close();
+
+	return hexStr;
+}
+
+std::string hash_object(const std::string filename, bool verbose) {
+	std::ifstream inputFile(filename, std::ios::binary | std::ios::ate);
+	if (!inputFile.is_open()) {
+		std::cerr << "error couldnt open file " << filename << std::endl;
+		return "";
+	}
+
+	std::streamsize size = inputFile.tellg();
+	inputFile.seekg(0, std::ios::beg);
+
+	std::string content(size, '\0');
+	if (!inputFile.read(content.data(), size)) {
+		std::cerr << "error reading file " << filename << std::endl;
+		return "";
+	}
+
+	std::string header = "blob " + std::to_string(content.size());
+	header.push_back('\0');
+	std::string store = header + content;
+
+	std::string hash = write_object_to_store(store);
+	if (verbose) {
+		std::cout << hash << std::endl;
+	}
+
+	return hash;
 }

@@ -4,6 +4,7 @@
 #include "write-tree/write-tree.h"
 
 #include <filesystem>
+#include <iostream>
 #include <string>
 int main(int argc, char **argv) {
 	std::string cmd = argv[1];
@@ -17,8 +18,16 @@ int main(int argc, char **argv) {
 		// lit cat-file <filename>
 		cat_file(argv[2]);
 	} else if (cmd == "write-tree") {
-		std::filesystem::path cwd = std::filesystem::current_path();
+		// default to writing the staging area
+		// for now we'll just do the cwd but after add is implemented we should
+		// do the staging area
+		if (argc == 2) {
+			std::filesystem::path cwd = std::filesystem::current_path();
 
-		Tree root = Tree::build_tree(cwd);
-	}
+			Tree root = Tree::build_tree(cwd);
+
+			std::string hash = root.write();
+			std::cout << hash << std::endl;
+		}
+	};
 }
